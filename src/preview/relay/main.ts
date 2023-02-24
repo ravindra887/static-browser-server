@@ -9,6 +9,7 @@ import {
   IPreviewInitMessage,
   IWorkerPingMessage,
   IWorkerInitMessage,
+  IPreviewResponseMessage,
 } from "./types";
 import { getWorkerInstance } from "./utils";
 
@@ -41,6 +42,16 @@ window.addEventListener(
   (event: MessageEvent<IPreviewInitMessage>) => {
     if (event.data.$type === "preview/init") {
       const parentPort = event.ports[0];
+      parentPort.onmessage = async (evt: MessageEvent) => {
+        if (
+          typeof evt.data === "object" &&
+          evt.data.$channel === CHANNEL_NAME &&
+          evt.data.$type === "preview/response"
+        ) {
+          const msg: IPreviewResponseMessage = evt.data;
+          workerChannel.port1.postMessage(msg);
+        }
+      };
       parentPortPromise.resolve(parentPort);
     }
   }
