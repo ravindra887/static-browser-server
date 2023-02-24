@@ -11,11 +11,18 @@
     "LICENSE",
     "package.json"
   ],
+  "scripts": {
+    "build:relay": "node -r esbuild-register ./build-relay.ts",
+    "build": "rm -rf out && pnpm build:relay"
+  },
   "devDependencies": {
     "@fastify/static": "^6.9.0",
     "@types/node": "^18.14.1",
+    "base-x": "^4.0.0",
     "esbuild": "^0.17.10",
-    "fastify": "^4.13.0"
+    "esbuild-register": "^3.4.2",
+    "fastify": "^4.13.0",
+    "mustache": "^4.2.0"
   },
   "dependencies": {
     "@open-draft/deferred-promise": "^2.1.0",

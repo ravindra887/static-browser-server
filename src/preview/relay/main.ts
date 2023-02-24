@@ -97,7 +97,7 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
    */
   const registerWorker = async (): Promise<ServiceWorker | null> => {
     const registration = await navigator.serviceWorker.register(
-      `/${__SERVICE_WORKER_BUNDLE_NAME}`,
+      __SERVICE_WORKER_BUNDLE_NAME,
       {
         scope: "/",
       }

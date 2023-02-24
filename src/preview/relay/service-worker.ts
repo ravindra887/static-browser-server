@@ -13,10 +13,6 @@ import {
   MessageSentToWorker,
 } from "./types";
 
-declare global {
-  var __RUNTIME_BUNDLE_NAME: string;
-}
-
 declare const self: ServiceWorkerGlobalScope;
 
 // Export empty type because of the "tsc --isolatedModules" flag.
@@ -178,10 +174,6 @@ self.addEventListener("fetch", (event) => {
   const parsedUrl = new URL(req.url);
 
   if (parsedUrl.pathname.startsWith("/__csb")) {
-    if (parsedUrl.pathname === "/__csb_runtime.js") {
-      return event.respondWith(fetch(`/${__RUNTIME_BUNDLE_NAME}`));
-    }
-
     return;
   }
 
