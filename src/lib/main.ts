@@ -65,6 +65,8 @@ export class PreviewController {
         new URL(request.url, previewRoot).pathname
       );
       let body: string | Uint8Array | null = null;
+      let isIndex = false;
+      const headers: Record<string, string> = {};
       try {
         body = await this.#getFileContent(filepath);
       } catch (err) {
@@ -72,6 +74,7 @@ export class PreviewController {
       }
       if (body == null) {
         body = await this.#getIndexAtPath(filepath);
+        headers["Content-Type"] = "text/html; charset=utf-8";
       }
       if (body == null) {
         throw new Error("File not found");
@@ -80,8 +83,8 @@ export class PreviewController {
         $channel: CHANNEL_NAME,
         $type: "preview/response",
         id: request.id,
-        headers: {},
-        status: 404,
+        headers,
+        status: 200,
         body,
       };
       port.postMessage(responseMessage);
@@ -90,7 +93,9 @@ export class PreviewController {
         $channel: CHANNEL_NAME,
         $type: "preview/response",
         id: request.id,
-        headers: {},
+        headers: {
+          ["Content-Type"]: "text/html; charset=utf-8",
+        },
         status: 404,
         body: "File not found",
       };
