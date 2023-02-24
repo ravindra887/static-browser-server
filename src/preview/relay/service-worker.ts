@@ -67,12 +67,10 @@ function initRelayPort(relayPort: MessagePort): void {
 
 function createRelayPortPromise(): DeferredPromise<MessagePort> {
   const promise = new DeferredPromise<MessagePort>();
-
   promise.then((port) => {
     initRelayPort(port);
     return port;
   });
-
   return promise;
 }
 
@@ -91,7 +89,7 @@ async function sendToRelay(message: any): Promise<void> {
 }
 
 self.addEventListener("message", async (event) => {
-  if (!event.data?.type) {
+  if (typeof event.data !== "object" || event.data.$channel !== CHANNEL_NAME) {
     return;
   }
 
