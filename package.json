@@ -16,6 +16,7 @@
   "scripts": {
     "build:relay": "node -r esbuild-register ./build-relay.ts",
     "build:lib": "esbuild ./src/lib/main.ts --bundle --outdir=out/lib --format=cjs",
+    "build:demo": "node -r esbuild-register ./build-demo.ts",
     "build": "rm -rf out && pnpm build:lib && pnpm build:relay",
     "build:prod": "MINIFY=true && pnpm build"
   },
