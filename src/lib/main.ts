@@ -41,7 +41,7 @@ export class PreviewController {
   async #getIndexAtPath(filepath: string): Promise<string | Uint8Array> {
     for (const index of this.#indexFiles) {
       try {
-        const content = await this.#getIndexAtPath(
+        const content = await this.#getFileContent(
           joinFilepath(filepath, index)
         );
         return content;
