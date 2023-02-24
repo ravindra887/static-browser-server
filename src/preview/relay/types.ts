@@ -42,7 +42,11 @@ export interface IWorkerInitMessage {
   $type: "worker/init";
 }
 
-export type MessageSentToWorker = IWorkerPingMessage | IPreviewResponseMessage | IWorkerInitMessage;
+export type MessageSentToWorker =
+  | IWorkerPingMessage
+  | IPreviewResponseMessage
+  | IWorkerInitMessage;
 export type MessageReceivedFromWorker =
   | IPreviewRequestMessage
   | IWorkerPongMessage;
+export type MessageSentToMain = IPreviewRequestMessage | IPreviewReadyMessage;

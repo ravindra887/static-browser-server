@@ -1,15 +1,139 @@
+import { createId } from "@paralleldrive/cuid2";
+import { CHANNEL_NAME } from "../preview/relay/constants";
+import {
+  IPreviewInitMessage,
+  IPreviewRequestMessage,
+  IPreviewResponseMessage,
+  MessageSentToMain,
+} from "../preview/relay/types";
+
+export type FileContent = string | Uint8Array;
+export type GetFileContentFn = (
+  filepath: string
+) => Promise<FileContent> | FileContent;
+
 export interface IPreviewControllerOptions {
   baseUrl: string;
-  getFileContent: (filepath: string) => string | Uint8Array;
+  getFileContent: GetFileContentFn;
+  indexFiles?: string[];
+}
+
+export function normalizeFilepath(filepath: string): string {
+  return filepath;
+}
+
+export function joinFilepath(filepath: string, addition: string): string {
+  return filepath + addition;
 }
 
 export class PreviewController {
-  #initPromise: null | Promise<string> = null;
+  #baseUrl: URL;
+  #indexFiles: string[];
+  #getFileContent: GetFileContentFn;
+  #initPromise: null | Promise<[string, MessagePort]> = null;
 
-  constructor(private options: IPreviewControllerOptions) {}
+  constructor(options: IPreviewControllerOptions) {
+    this.#baseUrl = new URL(options.baseUrl);
+    this.#getFileContent = options.getFileContent;
+    this.#indexFiles = options.indexFiles ?? ["index.html", "index.html"];
+  }
 
-  async #initPreview(): Promise<string> {
-    return "";
+  async #getIndexAtPath(filepath: string): Promise<string | Uint8Array> {
+    for (const index of this.#indexFiles) {
+      try {
+        const content = await this.#getIndexAtPath(
+          joinFilepath(filepath, index)
+        );
+        return content;
+      } catch (err) {
+        // do nothing
+      }
+    }
+    throw new Error("No index file not found");
+  }
+
+  async #handleWorkerRequest(request: IPreviewRequestMessage): Promise<void> {
+    if (!this.#initPromise) {
+      throw new Error("Init promise is null");
+    }
+
+    const [previewRoot, port] = await this.#initPromise;
+    try {
+      const filepath = normalizeFilepath(
+        new URL(request.url, previewRoot).pathname
+      );
+      let body: string | Uint8Array | null = null;
+      if (filepath.endsWith("/")) {
+        body = await this.#getIndexAtPath(filepath);
+      } else {
+        body = await this.#getFileContent(filepath);
+      }
+      if (body == null) {
+        throw new Error("File not found");
+      }
+      const responseMessage: IPreviewResponseMessage = {
+        $channel: CHANNEL_NAME,
+        $type: "preview/response",
+        id: request.id,
+        headers: {},
+        status: 404,
+        body,
+      };
+      port.postMessage(responseMessage);
+    } catch (err) {
+      const responseMessage: IPreviewResponseMessage = {
+        $channel: CHANNEL_NAME,
+        $type: "preview/response",
+        id: request.id,
+        headers: {},
+        status: 404,
+        body: "File not found",
+      };
+      port.postMessage(responseMessage);
+    }
+  }
+
+  async #initPreview(): Promise<[string, MessagePort]> {
+    const id = createId();
+    const previewUrl = new URL(this.#baseUrl);
+    previewUrl.hostname = id + "-" + previewUrl.hostname;
+    previewUrl.pathname = "/";
+    const relayUrl = new URL(previewUrl);
+    relayUrl.pathname = "/__csb_relay/";
+    const iframe = document.createElement("iframe");
+    iframe.setAttribute("src", relayUrl.toString());
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+    const channel = new MessageChannel();
+    const iframeContentWindow = iframe.contentWindow;
+    if (!iframeContentWindow) {
+      throw new Error("Could not get iframe contentWindow");
+    }
+    return new Promise((resolve) => {
+      const port = channel.port1;
+      port.onmessage = (evt: MessageEvent<MessageSentToMain>) => {
+        if (
+          typeof evt.data === "object" &&
+          evt.data.$channel === CHANNEL_NAME
+        ) {
+          switch (evt.data.$type) {
+            case "preview/ready":
+              resolve([previewUrl.toString(), port]);
+              break;
+            case "preview/request":
+              this.#handleWorkerRequest(evt.data);
+              break;
+          }
+        }
+      };
+      iframe.onload = () => {
+        const initMsg: IPreviewInitMessage = {
+          $channel: CHANNEL_NAME,
+          $type: "preview/init",
+        };
+        iframeContentWindow.postMessage(initMsg, "*", [channel.port2]);
+      };
+    });
   }
 
   /**
@@ -19,6 +143,6 @@ export class PreviewController {
     if (!this.#initPromise) {
       this.#initPromise = this.#initPreview();
     }
-    return this.#initPromise;
+    return this.#initPromise.then((v) => v[0]);
   }
 }
