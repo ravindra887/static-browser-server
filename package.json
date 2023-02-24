@@ -1,0 +1,17 @@
+{
+  "name": "static-browser-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/codesandbox/static-browser-server.git",
+  "author": "Jasper De Moor <jasperdemoor@gmail.com>",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@fastify/static": "^6.9.0",
+    "@types/node": "^18.14.1",
+    "esbuild": "^0.17.10",
+    "fastify": "^4.13.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
