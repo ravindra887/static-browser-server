@@ -19,11 +19,13 @@ export interface IPreviewControllerOptions {
 }
 
 export function normalizeFilepath(filepath: string): string {
-  return filepath;
+  const split = filepath.split("/").filter(Boolean);
+  const normalized = split.join("/");
+  return "/" + normalized;
 }
 
 export function joinFilepath(filepath: string, addition: string): string {
-  return filepath + addition;
+  return normalizeFilepath(filepath + "/" + addition);
 }
 
 export class PreviewController {
@@ -63,10 +65,13 @@ export class PreviewController {
         new URL(request.url, previewRoot).pathname
       );
       let body: string | Uint8Array | null = null;
-      if (filepath.endsWith("/")) {
-        body = await this.#getIndexAtPath(filepath);
-      } else {
+      try {
         body = await this.#getFileContent(filepath);
+      } catch (err) {
+        // do nothing
+      }
+      if (body == null) {
+        body = await this.#getIndexAtPath(filepath);
       }
       if (body == null) {
         throw new Error("File not found");

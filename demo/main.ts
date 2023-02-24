@@ -1,7 +1,7 @@
 import { PreviewController } from "..";
 
 const files = {
-  "index.html": "Hello world!",
+  "/index.html": "Hello world!",
 };
 
 function makeAnIframe(url: string) {
@@ -17,7 +17,7 @@ async function run() {
     baseUrl: "https://wigg3b-3000.preview.csb.app/",
     getFileContent: (filepath) => {
       console.log("request file content", filepath);
-      return files["index.html"];
+      return files[filepath];
     },
   });
 
