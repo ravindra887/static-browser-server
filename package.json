@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "build:relay": "node -r esbuild-register ./build-relay.ts",
-    "build": "rm -rf out && pnpm build:relay"
+    "build": "rm -rf out && pnpm build:relay",
+    "build:prod": "MINIFY=true && pnpm build"
   },
   "devDependencies": {
     "@fastify/static": "^6.9.0",

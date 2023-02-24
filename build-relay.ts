@@ -1,10 +1,11 @@
-import dotenv from "dotenv";
 import esbuild from "esbuild";
 import Mustache from "mustache";
 import pathUtils from "path";
 import fs from "fs";
 
 import { hashString } from "./utils";
+
+const SHOULD_MINIFY = !!process.env.MINIFY;
 
 const PREVIEW_OUT_DIR = pathUtils.join(__dirname, "./out/preview");
 const RELAY_OUT_DIR = pathUtils.join(__dirname, "./out/preview/__csb_relay");
@@ -16,7 +17,7 @@ async function bundleRelay(swPath: string): Promise<string> {
   const result = await esbuild.build({
     write: false,
     bundle: true,
-    minify: true,
+    minify: SHOULD_MINIFY,
     sourcemap: false,
     platform: "browser",
     format: "iife",
@@ -43,7 +44,7 @@ async function bundleServiceWorker(): Promise<string> {
   const result = await esbuild.build({
     write: false,
     bundle: true,
-    minify: true,
+    minify: SHOULD_MINIFY,
     sourcemap: false,
     platform: "browser",
     format: "iife",
