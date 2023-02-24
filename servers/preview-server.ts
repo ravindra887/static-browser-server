@@ -8,7 +8,7 @@ const PORT = +(process.env.PORT || "3000");
 
 const app = fastify({ logger: true });
 
-const PREVIEW_BUILD_DIR = path.join(__dirname, "../out");
+const PREVIEW_BUILD_DIR = path.join(__dirname, "../out/preview");
 
 app.register(fastifyStatic, {
   root: PREVIEW_BUILD_DIR,
