@@ -1,4 +1,5 @@
 import { createId } from "@paralleldrive/cuid2";
+
 import { CHANNEL_NAME } from "../preview/relay/constants";
 import {
   IPreviewInitMessage,
@@ -6,6 +7,7 @@ import {
   IPreviewResponseMessage,
   MessageSentToMain,
 } from "../preview/relay/types";
+import { EXTENSIONS_MAP } from "./mime";
 
 export type FileContent = string | Uint8Array;
 export type GetFileContentFn = (
@@ -26,6 +28,16 @@ export function normalizeFilepath(filepath: string): string {
 
 export function joinFilepath(filepath: string, addition: string): string {
   return normalizeFilepath(filepath + "/" + addition);
+}
+
+export function getExtension(filepath: string): string {
+  const parts = filepath.split(".");
+  if (parts.length <= 1) {
+    return "";
+  } else {
+    const ext = parts[parts.length - 1];
+    return ext;
+  }
 }
 
 export class PreviewController {
@@ -65,6 +77,7 @@ export class PreviewController {
         new URL(request.url, previewRoot).pathname
       );
       let body: string | Uint8Array | null = null;
+      const headers: Record<string, string> = {};
       try {
         body = await this.#getFileContent(filepath);
       } catch (err) {
@@ -72,16 +85,24 @@ export class PreviewController {
       }
       if (body == null) {
         body = await this.#getIndexAtPath(filepath);
+        headers["Content-Type"] = "text/html; charset=utf-8";
       }
       if (body == null) {
         throw new Error("File not found");
+      }
+      if (!headers["Content-Type"]) {
+        const extension = getExtension(filepath);
+        const foundMimetype = EXTENSIONS_MAP.get(extension);
+        if (foundMimetype) {
+          headers["Content-Type"] = foundMimetype;
+        }
       }
       const responseMessage: IPreviewResponseMessage = {
         $channel: CHANNEL_NAME,
         $type: "preview/response",
         id: request.id,
-        headers: {},
-        status: 404,
+        headers,
+        status: 200,
         body,
       };
       port.postMessage(responseMessage);
@@ -90,7 +111,9 @@ export class PreviewController {
         $channel: CHANNEL_NAME,
         $type: "preview/response",
         id: request.id,
-        headers: {},
+        headers: {
+          ["Content-Type"]: "text/html; charset=utf-8",
+        },
         status: 404,
         body: "File not found",
       };

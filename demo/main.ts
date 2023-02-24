@@ -1,7 +1,15 @@
 import { PreviewController } from "..";
 
 const files = {
-  "/index.html": "Hello world!",
+  "/index.html": `<html>
+  <head>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    Hello world!
+  </body>
+</html>`,
+  "/styles.css": "body { background: purple; color: white; }",
 };
 
 function makeAnIframe(url: string) {
