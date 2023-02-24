@@ -19,10 +19,6 @@
     "pnpm start:preview": {
       "name": "pnpm start:preview",
       "command": "pnpm start:preview"
-    },
-    "pnpm build:demo": {
-      "name": "pnpm build:demo",
-      "command": "pnpm build:demo"
     }
   }
 }
