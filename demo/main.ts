@@ -22,7 +22,7 @@ function makeAnIframe(url: string) {
 
 async function run() {
   const previewController = new PreviewController({
-    baseUrl: "https://wigg3b-3000.preview.csb.app/",
+    baseUrl: "https://jqgbco-3000.preview.csb.app/",
     getFileContent: (filepath) => {
       console.log("request file content", filepath);
       return files[filepath];

@@ -2,7 +2,7 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="webworker" />
 
-import { createId } from "@paralleldrive/cuid2";
+import { generateRandomId } from "../../lib/utils";
 import { invariant } from "outvariant";
 import { DeferredPromise } from "@open-draft/deferred-promise";
 import { CHANNEL_NAME } from "./constants";
@@ -136,7 +136,7 @@ self.addEventListener("message", async (event) => {
 });
 
 export function getResponse(request: Request): DeferredPromise<IResponseData> {
-  const requestId = createId();
+  const requestId = generateRandomId();
   const requestPromise = new DeferredPromise<IResponseData>();
 
   // Add some response timeout so the worker doesn't hang indefinitely,

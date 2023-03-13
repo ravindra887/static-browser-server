@@ -1,5 +1,3 @@
-import { createId } from "@paralleldrive/cuid2";
-
 import { CHANNEL_NAME } from "../preview/relay/constants";
 import {
   IPreviewInitMessage,
@@ -8,6 +6,7 @@ import {
   MessageSentToMain,
 } from "../preview/relay/types";
 import { EXTENSIONS_MAP } from "./mime";
+import { generateRandomId } from "./utils";
 
 export type FileContent = string | Uint8Array;
 export type GetFileContentFn = (
@@ -122,7 +121,7 @@ export class PreviewController {
   }
 
   async #initPreview(): Promise<[string, MessagePort]> {
-    const id = createId();
+    const id = generateRandomId();
     const previewUrl = new URL(this.#baseUrl);
     previewUrl.hostname = id + "-" + previewUrl.hostname;
     previewUrl.pathname = "/";
