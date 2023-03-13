@@ -23,7 +23,7 @@ const workerChannel = new MessageChannel();
 const workerReadyPromise = new DeferredPromise<ServiceWorker>();
 
 workerReadyPromise.then((worker) => {
-  console.debug("worker is ready, initializing MessageChannel...");
+  // console.debug("worker is ready, initializing MessageChannel...");
 
   // Always post the initial MessageChannel message to the worker
   // as soon as the worker is ready. This is done once.
@@ -60,7 +60,7 @@ window.addEventListener(
 workerChannel.port1.onmessage = async (event) => {
   const data = event.data;
 
-  console.debug("incoming message from the worker", event.data);
+  // console.debug("incoming message from the worker", event.data);
 
   if (data.$channel === CHANNEL_NAME) {
     // Pause the message handling until the parent has taken control of the preview.
@@ -118,7 +118,7 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
 
   // Unregisters irrelevant worker registrations.
   const registrations = await navigator.serviceWorker.getRegistrations();
-  console.debug("all registrations", location, registrations);
+  // console.debug("all registrations", location, registrations);
 
   await Promise.all(
     registrations.map((registration) => {
@@ -126,11 +126,11 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
 
       // Unregister any worker that shouldn't be there.
       if (worker && worker.scriptURL !== workerUrl) {
-        console.debug(
-          "found irrelevant worker registration, unregistering...",
-          worker,
-          registration
-        );
+        // console.debug(
+        //   "found irrelevant worker registration, unregistering...",
+        //   worker,
+        //   registration
+        // );
         return registration.unregister();
       }
     })
@@ -141,19 +141,19 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
 
   // No controller means the relay does not have any Service Worker registered.
   if (!controller) {
-    console.debug(
-      "relay is not controlled by a worker, registering a new worker..."
-    );
+    // console.debug(
+    //   "relay is not controlled by a worker, registering a new worker..."
+    // );
     return registerWorker();
   }
 
   // If the controller has the same script as the expected worker,
   // this means the correct worker is already handling the page.
   if (controller.scriptURL === workerUrl) {
-    console.debug(
-      "relay is controlled by the correct worker",
-      controller.scriptURL
-    );
+    // console.debug(
+    //   "relay is controlled by the correct worker",
+    //   controller.scriptURL
+    // );
     return controller;
   }
 
@@ -162,16 +162,16 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
     navigator.serviceWorker.getRegistration(workerUrl),
   ]);
 
-  console.debug("controller registration:", controllerRegistration);
-  console.debug("worker registration:", registration);
+  // console.debug("controller registration:", controllerRegistration);
+  // console.debug("worker registration:", registration);
 
   // If there's no registration associated with the correct worker,
   // unregister whichever existing controller and register the worker anew.
   if (!registration) {
-    console.debug(
-      'no registration found for "%s", unregistering controller and registering a new worker...',
-      workerUrl
-    );
+    // console.debug(
+    //   'no registration found for "%s", unregistering controller and registering a new worker...',
+    //   workerUrl
+    // );
     await controllerRegistration?.unregister();
     return registerWorker();
   }
@@ -179,7 +179,7 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
   // Waiting registration means the correct worker is queued but
   // hasn't been installed/activated yet. Promote it by updating.
   if (registration.waiting) {
-    console.debug("found waiting registration, promoting...");
+    // console.debug("found waiting registration, promoting...");
     await registration.update();
     const worker = getWorkerInstance(registration);
 
@@ -200,7 +200,7 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
 }
 
 async function start() {
-  console.debug("starting the request relay...", { workerUrl });
+  // console.debug("starting the request relay...", { workerUrl });
 
   const worker = await getServiceWorker().catch((error) => {
     console.error(
@@ -219,7 +219,7 @@ async function start() {
   // Wait until the parent sends the init event
   // via the MessageChannel, acknowledging that it recognized the relay.
   const parentPort = await parentPortPromise;
-  console.debug("parent port received", parentPort);
+  // console.debug("parent port received", parentPort);
 
   const readyMessage: IPreviewReadyMessage = {
     $channel: CHANNEL_NAME,
