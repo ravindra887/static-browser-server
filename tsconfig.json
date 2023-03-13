@@ -8,7 +8,7 @@
     "inlineSourceMap": true,
     "useUnknownInCatchVariables": false,
     "resolveJsonModule": true,
-    "target": "esnext",
+    "target": "es2020",
     "module": "commonjs",
     "lib": ["ES2020"],
     "outDir": "./out",

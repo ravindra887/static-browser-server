@@ -1,5 +1,3 @@
-import { createId } from "@paralleldrive/cuid2";
-
 import { CHANNEL_NAME } from "../preview/relay/constants";
 import {
   IPreviewInitMessage,
@@ -8,6 +6,7 @@ import {
   MessageSentToMain,
 } from "../preview/relay/types";
 import { EXTENSIONS_MAP } from "./mime";
+import { generateRandomId } from "./utils";
 
 export type FileContent = string | Uint8Array;
 export type GetFileContentFn = (
@@ -44,7 +43,7 @@ export class PreviewController {
   #baseUrl: URL;
   #indexFiles: string[];
   #getFileContent: GetFileContentFn;
-  #initPromise: null | Promise<[string, MessagePort]> = null;
+  #initPromise: null | Promise<[string, MessagePort, HTMLIFrameElement]> = null;
 
   constructor(options: IPreviewControllerOptions) {
     this.#baseUrl = new URL(options.baseUrl);
@@ -121,13 +120,18 @@ export class PreviewController {
     }
   }
 
-  async #initPreview(): Promise<[string, MessagePort]> {
-    const id = createId();
+  #getRelayUrl(previewUrl: string): string {
+    const relayUrl = new URL(previewUrl);
+    relayUrl.pathname = "/__csb_relay/";
+    return relayUrl.toString();
+  }
+
+  async #initPreview(): Promise<[string, MessagePort, HTMLIFrameElement]> {
+    const id = generateRandomId();
     const previewUrl = new URL(this.#baseUrl);
     previewUrl.hostname = id + "-" + previewUrl.hostname;
     previewUrl.pathname = "/";
-    const relayUrl = new URL(previewUrl);
-    relayUrl.pathname = "/__csb_relay/";
+    const relayUrl = this.#getRelayUrl(previewUrl.toString());
     const iframe = document.createElement("iframe");
     iframe.setAttribute("src", relayUrl.toString());
     iframe.style.display = "none";
@@ -146,7 +150,7 @@ export class PreviewController {
         ) {
           switch (evt.data.$type) {
             case "preview/ready":
-              resolve([previewUrl.toString(), port]);
+              resolve([previewUrl.toString(), port, iframe]);
               break;
             case "preview/request":
               this.#handleWorkerRequest(evt.data);
@@ -172,5 +176,18 @@ export class PreviewController {
       this.#initPromise = this.#initPreview();
     }
     return this.#initPromise.then((v) => v[0]);
+  }
+
+  destroy(): void {
+    if (this.#initPromise) {
+      const p = this.#initPromise;
+      p.then((val) => {
+        val[1].close();
+        const url = this.#getRelayUrl(val[0]);
+        const foundElements = document.body.querySelectorAll(`src="${url}"`);
+        foundElements.forEach((el) => el.remove());
+      });
+      this.#initPromise = null;
+    }
   }
 }
