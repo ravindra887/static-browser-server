@@ -40,21 +40,23 @@ export function getExtension(filepath: string): string {
 }
 
 export class PreviewController {
-  #baseUrl: URL;
-  #indexFiles: string[];
-  #getFileContent: GetFileContentFn;
-  #initPromise: null | Promise<[string, MessagePort, HTMLIFrameElement]> = null;
+  private baseUrl: URL;
+  private indexFiles: string[];
+  private getFileContent: GetFileContentFn;
+  private initPromise: null | Promise<
+    [string, MessagePort, HTMLIFrameElement]
+  > = null;
 
   constructor(options: IPreviewControllerOptions) {
-    this.#baseUrl = new URL(options.baseUrl);
-    this.#getFileContent = options.getFileContent;
-    this.#indexFiles = options.indexFiles ?? ["index.html", "index.html"];
+    this.baseUrl = new URL(options.baseUrl);
+    this.getFileContent = options.getFileContent;
+    this.indexFiles = options.indexFiles ?? ["index.html", "index.html"];
   }
 
-  async #getIndexAtPath(filepath: string): Promise<string | Uint8Array> {
-    for (const index of this.#indexFiles) {
+  private async getIndexAtPath(filepath: string): Promise<string | Uint8Array> {
+    for (const index of this.indexFiles) {
       try {
-        const content = await this.#getFileContent(
+        const content = await this.getFileContent(
           joinFilepath(filepath, index)
         );
         return content;
@@ -65,12 +67,14 @@ export class PreviewController {
     throw new Error("No index file not found");
   }
 
-  async #handleWorkerRequest(request: IPreviewRequestMessage): Promise<void> {
-    if (!this.#initPromise) {
+  private async handleWorkerRequest(
+    request: IPreviewRequestMessage
+  ): Promise<void> {
+    if (!this.initPromise) {
       throw new Error("Init promise is null");
     }
 
-    const [previewRoot, port] = await this.#initPromise;
+    const [previewRoot, port] = await this.initPromise;
     try {
       const filepath = normalizeFilepath(
         new URL(request.url, previewRoot).pathname
@@ -78,12 +82,12 @@ export class PreviewController {
       let body: string | Uint8Array | null = null;
       const headers: Record<string, string> = {};
       try {
-        body = await this.#getFileContent(filepath);
+        body = await this.getFileContent(filepath);
       } catch (err) {
         // do nothing
       }
       if (body == null) {
-        body = await this.#getIndexAtPath(filepath);
+        body = await this.getIndexAtPath(filepath);
         headers["Content-Type"] = "text/html; charset=utf-8";
       }
       if (body == null) {
@@ -120,18 +124,20 @@ export class PreviewController {
     }
   }
 
-  #getRelayUrl(previewUrl: string): string {
+  private getRelayUrl(previewUrl: string): string {
     const relayUrl = new URL(previewUrl);
     relayUrl.pathname = "/__csb_relay/";
     return relayUrl.toString();
   }
 
-  async #initPreview(): Promise<[string, MessagePort, HTMLIFrameElement]> {
+  private async _initPreview(): Promise<
+    [string, MessagePort, HTMLIFrameElement]
+  > {
     const id = generateRandomId();
-    const previewUrl = new URL(this.#baseUrl);
+    const previewUrl = new URL(this.baseUrl);
     previewUrl.hostname = id + "-" + previewUrl.hostname;
     previewUrl.pathname = "/";
-    const relayUrl = this.#getRelayUrl(previewUrl.toString());
+    const relayUrl = this.getRelayUrl(previewUrl.toString());
     const iframe = document.createElement("iframe");
     iframe.setAttribute("src", relayUrl.toString());
     iframe.style.display = "none";
@@ -153,7 +159,7 @@ export class PreviewController {
               resolve([previewUrl.toString(), port, iframe]);
               break;
             case "preview/request":
-              this.#handleWorkerRequest(evt.data);
+              this.handleWorkerRequest(evt.data);
               break;
           }
         }
@@ -171,23 +177,23 @@ export class PreviewController {
   /**
    * Initialize a preview and return the url at which the preview is being served
    **/
-  initPreview(): Promise<string> {
-    if (!this.#initPromise) {
-      this.#initPromise = this.#initPreview();
+  public initPreview(): Promise<string> {
+    if (!this.initPromise) {
+      this.initPromise = this._initPreview();
     }
-    return this.#initPromise.then((v) => v[0]);
+    return this.initPromise.then((v) => v[0]);
   }
 
-  destroy(): void {
-    if (this.#initPromise) {
-      const p = this.#initPromise;
+  public destroy(): void {
+    if (this.initPromise) {
+      const p = this.initPromise;
       p.then((val) => {
         val[1].close();
-        const url = this.#getRelayUrl(val[0]);
+        const url = this.getRelayUrl(val[0]);
         const foundElements = document.body.querySelectorAll(`src="${url}"`);
         foundElements.forEach((el) => el.remove());
       });
-      this.#initPromise = null;
+      this.initPromise = null;
     }
   }
 }
