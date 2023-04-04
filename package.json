@@ -1,6 +1,6 @@
 {
   "name": "static-browser-server",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "./out/lib/main.js",
   "types": "./src/lib/main.ts",
   "repository": "https://github.com/codesandbox/static-browser-server.git",
