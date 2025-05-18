@@ -126,7 +126,7 @@ export class PreviewController {
 
   private getRelayUrl(previewUrl: string): string {
     const relayUrl = new URL(previewUrl);
-    relayUrl.pathname = "/__csb_relay/";
+    relayUrl.pathname += "__csb_relay/";
     return relayUrl.toString();
   }
 
