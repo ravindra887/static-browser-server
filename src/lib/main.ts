@@ -135,8 +135,8 @@ export class PreviewController {
   > {
     const id = generateRandomId();
     const previewUrl = new URL(this.baseUrl);
-    previewUrl.hostname = id + "-" + previewUrl.hostname;
-    previewUrl.pathname = "/";
+    //previewUrl.hostname = id + "-" + previewUrl.hostname;
+    //previewUrl.pathname = "/";
     const relayUrl = this.getRelayUrl(previewUrl.toString());
     const iframe = document.createElement("iframe");
     iframe.setAttribute("src", relayUrl.toString());
