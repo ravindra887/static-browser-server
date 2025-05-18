@@ -22,7 +22,8 @@
     "build:prod": "MINIFY=true && pnpm build",
     "start:demo": "pnpm build && node -r esbuild-register ./servers/demo-server.ts",
     "start:preview": "pnpm build && node -r esbuild-register ./servers/preview-server.ts",
-    "prepack": "pnpm build"
+    "prepack": "pnpm build",
+    "prepare": "pnpm build"
   },
   "devDependencies": {
     "@fastify/static": "^6.9.0",
