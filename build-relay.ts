@@ -29,7 +29,7 @@ async function bundleRelay(swPath: string): Promise<string> {
   });
 
   const text = result.outputFiles[0].text;
-  const bundleName = `/__csb_relay/__csb_relay.${hashString(text)}.js`;
+  const bundleName = `/sandpack-preview/__csb_relay/__csb_relay.${hashString(text)}.js`;
   const fullPath = pathUtils.join(PREVIEW_OUT_DIR, bundleName);
   fs.writeFileSync(fullPath, text, "utf-8");
   return bundleName;
