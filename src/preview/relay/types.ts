@@ -42,6 +42,11 @@ export interface IWorkerInitMessage {
   $type: "worker/init";
 }
 
+export interface IPreviewHtmlMessage {
+  $channel: typeof CHANNEL_NAME;
+  $type: "export/request";
+}
+
 export type MessageSentToWorker =
   | IWorkerPingMessage
   | IPreviewResponseMessage
@@ -49,4 +54,4 @@ export type MessageSentToWorker =
 export type MessageReceivedFromWorker =
   | IPreviewRequestMessage
   | IWorkerPongMessage;
-export type MessageSentToMain = IPreviewRequestMessage | IPreviewReadyMessage;
+export type MessageSentToMain = IPreviewRequestMessage | IPreviewReadyMessage | IPreviewHtmlMessage;

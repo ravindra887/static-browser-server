@@ -161,6 +161,15 @@ export class PreviewController {
             case "preview/request":
               this.handleWorkerRequest(evt.data);
               break;
+            case "export/request":
+              const body = iframeContentWindow.document.body;
+              const resMsg = {
+                $channel: CHANNEL_NAME,
+                $type: "export/response",
+                body
+              };
+              iframeContentWindow.postMessage(resMsg, "*", [channel.port2]);
+              break;
           }
         }
       };
