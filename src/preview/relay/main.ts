@@ -110,7 +110,7 @@ async function getServiceWorker(): Promise<ServiceWorker | null> {
     const registration = await navigator.serviceWorker.register(
       __SERVICE_WORKER_BUNDLE_NAME,
       {
-        scope: "/",
+        scope: "/sandpack-preview/",
       }
     );
     return getWorkerInstance(registration);
